@@ -12,13 +12,14 @@ const pokemonDefense = document.getElementById("defense");
 const pokemonSpecialAttack = document.getElementById("special-attack");
 const pokemonSpecialDefense = document.getElementById("special-defense");
 const pokemonSpeed = document.getElementById("speed");
-const allPokemonUrl = "https://pokeapi-proxy.freecodecamp.rocks/api/pokemon"
+const pokemonUrl = "https://pokeapi-proxy.freecodecamp.rocks/api/pokemon";
+let pokemonData = [];
 
 const fetchAllData = async () =>{
   try {
-    const response = await fetch(allPokemonUrl);
+    const response = await fetch(pokemonUrl);
     const data = await response.json();
-    parseData(data);
+    data.results.forEach(obj => pokemonData.push(obj)); //store each pokemon object in pokemonData array
   } catch (err) {
     console.log(err);
   }
@@ -26,9 +27,9 @@ const fetchAllData = async () =>{
 
 const fetchPokemonData = async (str) => {
   try {
-    const response = await fetch(allPokemonUrl.concat(`/${str}`));
-    const pokemonData = await response.json();
-    showPokemonData(pokemonData);
+    const response = await fetch(pokemonUrl.concat(`/${str}`));
+    const data = await response.json();
+    showPokemonData(data);
   } catch (err) {
     console.log(err);
   }
@@ -36,7 +37,6 @@ const fetchPokemonData = async (str) => {
 
 const showPokemonData = (data) => {
   const { name, id, weight, height, stats, types, sprites } = data;
-  console.log("types: ", types);
   const sprite = sprites.front_default;
   const health = stats[0].base_stat;
   const attack = stats[1].base_stat;
@@ -57,21 +57,17 @@ const showPokemonData = (data) => {
   pokemonSpecialDefense.textContent = specialDefense;
   pokemonSpeed.textContent = speed;
   pokemonTypes.innerHTML = types.map((obj) => `<span class="pokemon-type ${obj.type.name}">${obj.type.name.toUpperCase()}</span>`).join("");
-
-  
 }
 
-const parseData = (data) => {
-  const userInput = textInput.value.toLowerCase();
-  const results = data.results;
-  const name = results.map((obj) => obj.name);
-  const ids = results.map((obj) => obj.id);
-
-  if (!name.includes(userInput) && !ids.includes(Number(userInput))) {
-    alert("Pokémon not found");
+const parseData = () => {
+  const userInput = textInput.value.toLowerCase();  //get user input from text field in lowercase
+  let searchResults = pokemonData.find(obj => obj.name === userInput || obj.id === Number(userInput));  //find the id or name the user enters
+  if (!searchResults) {   //if not found
+    alert("Pokemon not found!");
   } else {
     fetchPokemonData(userInput);
   }
 }
 
-searchBtn.addEventListener("click", fetchAllData);
+fetchAllData();
+searchBtn.addEventListener("click", parseData);
